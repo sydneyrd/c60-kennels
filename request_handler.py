@@ -5,34 +5,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 # get_all_customers, get_single_customer, create_animal, create_location, create_customer, create_employee)
 
 method_mapper = {
-    "animals": {
-        "all": all,
-        "single": single,
-        "create": create,
-        "update": update,
-        "delete": delete
-    },
-    "locations": {
-        "all": all,
-        "single": single,
-        "create": create,
-        "update": update,
-        "delete": delete
-    },
-    "employees": {
-        "all": all,
-        "single": single,
-        "create": create,
-        "update": update,
-        "delete": delete
-    },
-    "customers": {
-        "all": all,
-        "single": single,
-        "create": create,
-        "update": update,
-        "delete": delete
-    }
+
 }
 
 
@@ -53,19 +26,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         except ValueError:
             pass  # Request had trailing slash: /animals/
         return (resource, id)  # This is a tuple
-    def get_all_or_single(self, resource, id):
-        if id is not None:   
-            response = method_mapper[resource]["single"](resource, id)
-            if response is not None:
-                self._set_headers(200)
-            else:
-                self._set_headers(404)
-                response = {"error": "Not Found"}
-        else:
-            self._set_headers(200)
-            response = method_mapper[resource]["all"](resource)
-
-        return response
+  
 
     def do_GET(self):
         response = None
@@ -75,45 +36,12 @@ class HandleRequests(BaseHTTPRequestHandler):
 
 
     def do_POST(self):
-        self._set_headers(201)
-        content_len = int(self.headers.get('content-length', 0))
-        post_body = self.rfile.read(content_len)
-        post_body = json.loads(post_body)
-        (resource, id) = self.parse_url(self.path)
-        new_post = None
-        if resource == "animals":
-            new_post = method_mapper[resource]["create"](resource, post_body)
-        elif resource == "locations":
-            if "name" in post_body and "address" in post_body:
-                self._set_headers(201)
-                new_post = method_mapper[resource]["create"](resource, post_body)
-            else:
-                self._set_headers(400)
-                new_post = {
-                    "message": f'{"name is required" if "name" not in post_body else ""} {"address is required" if "address" not in post_body else ""}'
-                }
-        elif resource == "customers":
-            new_post = method_mapper[resource]["create"](resource, post_body)
-        elif resource == "employees":
-            new_post = method_mapper[resource]["create"](resource, post_body)
+     
 
         self.wfile.write(json.dumps(new_post).encode())
 
     def do_PUT(self):
-        self._set_headers(204)
-        content_len = int(self.headers.get('content-length', 0))
-        post_body = self.rfile.read(content_len)
-        post_body = json.loads(post_body)
-        (resource, id) = self.parse_url(self.path)
-        if resource == "animals":
-            method_mapper[resource]["update"](resource, id, post_body)
-        elif resource == "locations":
-            method_mapper[resource]["update"](resource, id, post_body)
-        elif resource == "customers":
-            method_mapper[resource]["update"](resource, id, post_body)
-        elif resource == "employees":
-            method_mapper[resource]["update"](resource, id, post_body)
-        self.wfile.write("".encode())
+   
 
     def _set_headers(self, status):
         """Sets the status code, Content-Type and Access-Control-Allow-Origin
@@ -139,23 +67,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_DELETE(self):
-        (resource, id) = self.parse_url(self.path)
-        if resource == "animals":
-            method_mapper[resource]["delete"](resource, id)
-            self._set_headers(204)
-            response = {"message": "Animal deleted"}
-        elif resource == "locations":
-            method_mapper[resource]["delete"](resource, id)
-            self._set_headers(204)
-            response = {"message": "Location deleted"}
-        elif resource == "customers":
-            self._set_headers(405)
-            response = {"message": "You can't delete a customer"}
-        elif resource == "employees":
-            response = {"message": "Employee deleted"}
-            method_mapper[resource]["delete"](resource, id)
-            self._set_headers(204)
-        self.wfile.write(json.dumps(response).encode())
+
 
 
 def main():
